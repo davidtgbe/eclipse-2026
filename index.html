@@ -383,6 +383,7 @@
         let soundEnabled = false;
 
         function setSoundState(on) {
+            const wasOn = soundEnabled;
             soundEnabled = on;
             if (on) {
                 if (!audioContext) {
@@ -390,6 +391,10 @@
                 }
                 if (audioContext && audioContext.state === 'suspended') {
                     audioContext.resume();
+                }
+                if (!wasOn) {
+                    warmSpeech();
+                    speak("Sonido activado.");
                 }
             } else {
                 if (synth) synth.cancel();
@@ -429,6 +434,31 @@
                 u.rate = 1.2;
                 synth.speak(u);
             } catch (e) { }
+        }
+
+        let countdownScheduled = { c2: false, c3: false };
+        let countdownTimers = [];
+
+        function clearCountdownTimers() {
+            countdownTimers.forEach(t => clearTimeout(t));
+            countdownTimers = [];
+            countdownScheduled = { c2: false, c3: false };
+        }
+
+        // Programa los pitidos y la voz de la cuenta atrás en momentos exactos,
+        // encolando cada número ligeramente antes de su segundo para compensar
+        // la latencia del motor de voz (evita que la voz vaya 1s por detrás).
+        function startScheduledCountdown(eventKey, beepFreq, startAt, specialAt, specialText) {
+            if (countdownScheduled[eventKey]) return;
+            countdownScheduled[eventKey] = true;
+            for (let n = startAt; n >= 1; n--) {
+                const delay = Math.max(0, (startAt - n) * 1000 - 250);
+                const t = setTimeout(() => {
+                    playBeep(beepFreq, 0.12);
+                    speak(n === specialAt ? specialText : String(n), false);
+                }, delay);
+                countdownTimers.push(t);
+            }
         }
 
         function speak(text, cancelPrevious = true) {
@@ -508,8 +538,9 @@
         function startTestMode() {
             setSoundState(true);
 
-            // 0. Pre-calentar el motor de voz para reducir latencia
+            // 0. Pre-calentar el motor de voz y limpiar programadores previos
             warmSpeech();
+            clearCountdownTimers();
 
             // 1. Hablar PRIMERO para avisar
             speak("Modo simulación activado. La cuenta atrás comenzará en breve.");
@@ -523,6 +554,7 @@
         }
 
         function resetRealTime() {
+            clearCountdownTimers();
             testMode = false;
             spokenSeconds = {};
             speak("Modo tiempo real activado.");
@@ -594,14 +626,9 @@
                     }
                 }
 
-                // CUENTA ATRÁS C2 (10s) - pitido sincronizado con cada número
+                // CUENTA ATRÁS C2 (10s) - programada para sincronizar voz y pitido
                 if (diffSecs <= 10 && diffSecs >= 1) {
-                    const key = `c2_${diffSecs}`;
-                    if (!spokenSeconds[key]) {
-                        spokenSeconds[key] = true;
-                        playBeep(880, 0.12);
-                        speak(String(diffSecs));
-                    }
+                    startScheduledCountdown('c2', 880, Math.min(diffSecs, 10), null, null);
                 }
 
             } else if (now >= TIMES.C2 && now < TIMES.C3) {
@@ -630,20 +657,9 @@
                     }
                 }
 
-                // CUENTA ATRÁS C3 (10s) - pitido sincronizado con cada número
+                // CUENTA ATRÁS C3 (10s) - programada para sincronizar voz y pitido
                 if (diffSecs <= 10 && diffSecs >= 1) {
-                    const key = `c3_${diffSecs}`;
-                    if (!spokenSeconds[key]) {
-                        spokenSeconds[key] = true;
-                        playBeep(1200, 0.12);
-                        if (diffSecs === 3) {
-                            speak("3. ¡Pónte las gafas!");
-                        } else if (diffSecs === 1) {
-                            speak("1");
-                        } else {
-                            speak(String(diffSecs));
-                        }
-                    }
+                    startScheduledCountdown('c3', 1200, Math.min(diffSecs, 10), 3, "3. ¡Pónte las gafas!");
                 }
 
             } else if (now >= TIMES.C3 && now < TIMES.C4) {
