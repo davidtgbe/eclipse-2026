@@ -1,509 +1,654 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eclipse Solar Total 2026 - Santander / GPS</title>
-  <style>
-    :root {
-      --bg-dark: #0a0e17;
-      --card-bg: rgba(22, 28, 45, 0.85);
-      --accent-gold: #ffb703;
-      --accent-red: #ff4d4d;
-      --accent-cyan: #00f0ff;
-      --accent-green: #2ec4b6;
-      --text-main: #f0f4f8;
-      --text-dim: #94a3b8;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eclipse Solar Total 2026 - Santander / GPS</title>
+    <style>
+        :root {
+            --bg-dark: #0a0e17;
+            --card-bg: rgba(22, 28, 45, 0.85);
+            --accent-gold: #ffb703;
+            --accent-red: #ff4d4d;
+            --accent-cyan: #00f0ff;
+            --accent-green: #2ec4b6;
+            --text-main: #f0f4f8;
+            --text-dim: #94a3b8;
+        }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
 
-    body {
-      background: radial-gradient(circle at 50% 20%, #1a233a 0%, var(--bg-dark) 80%);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
+        body {
+            background: radial-gradient(circle at 50% 20%, #1a233a 0%, var(--bg-dark) 80%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
 
-    header { text-align: center; margin-bottom: 15px; }
-    h1 { font-size: 1.8rem; color: var(--accent-gold); letter-spacing: 1px; }
-    .subtitle { font-size: 0.9rem; color: var(--text-dim); margin-top: 4px; }
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
 
-    .main-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      max-width: 1000px;
-      width: 100%;
-    }
+        h1 {
+            font-size: 1.8rem;
+            color: var(--accent-gold);
+            letter-spacing: 1px;
+        }
 
-    @media (max-width: 768px) { .main-grid { grid-template-columns: 1fr; } }
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
 
-    .card {
-      background: var(--card-bg);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(12px);
-      border-radius: 16px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1000px;
+            width: 100%;
+        }
 
-    .gps-box {
-      grid-column: 1 / -1;
-      background: rgba(0, 240, 255, 0.08);
-      border: 1px solid var(--accent-cyan);
-      border-radius: 10px;
-      padding: 10px 15px;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-    }
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
 
-    .gps-status { font-weight: bold; color: var(--accent-cyan); }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
 
-    .eclipse-stage {
-      width: 200px;
-      height: 200px;
-      position: relative;
-      border-radius: 50%;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      margin: 15px 0;
-    }
+        .gps-box {
+            grid-column: 1 / -1;
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 10px;
+            padding: 10px 15px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
 
-    .sun {
-      width: 150px;
-      height: 150px;
-      background: radial-gradient(circle, #fff7d6 0%, #ffb703 60%, #fb8500 100%);
-      border-radius: 50%;
-      box-shadow: 0 0 40px #ffb703;
-      position: absolute;
-      transition: all 0.5s ease;
-    }
+        .gps-status {
+            font-weight: bold;
+            color: var(--accent-cyan);
+        }
 
-    .sun.totality {
-      background: #000;
-      box-shadow: 0 0 35px 12px rgba(255, 255, 255, 0.95), 0 0 70px 25px rgba(0, 240, 255, 0.5);
-    }
+        .eclipse-stage {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            border-radius: 50%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin: 15px 0;
+        }
 
-    .moon {
-      width: 152px;
-      height: 152px;
-      background: #0a0e17;
-      border-radius: 50%;
-      position: absolute;
-      transform: translateX(200px);
-    }
+        .sun {
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, #fff7d6 0%, #ffb703 60%, #fb8500 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 40px #ffb703;
+            position: absolute;
+            transition: all 0.5s ease;
+        }
 
-    .timer-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); }
-    .timer-display { font-size: 2.8rem; font-weight: bold; font-family: monospace; color: var(--accent-cyan); margin: 5px 0; }
-    
-    .totality-card {
-      width: 100%;
-      background: rgba(255, 183, 3, 0.12);
-      border: 1px solid var(--accent-gold);
-      border-radius: 12px;
-      padding: 12px;
-      margin-top: 10px;
-      text-align: center;
-    }
+        .sun.totality {
+            background: #000;
+            box-shadow: 0 0 35px 12px rgba(255, 255, 255, 0.95), 0 0 70px 25px rgba(0, 240, 255, 0.5);
+        }
 
-    .totality-val {
-      font-size: 1.6rem;
-      font-weight: bold;
-      color: var(--accent-gold);
-    }
+        .moon {
+            width: 152px;
+            height: 152px;
+            background: #0a0e17;
+            border-radius: 50%;
+            position: absolute;
+            transform: translateX(200px);
+        }
 
-    .phase-badge {
-      background: rgba(255, 183, 3, 0.15);
-      border: 1px solid var(--accent-gold);
-      color: var(--accent-gold);
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      text-align: center;
-    }
+        .timer-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+        }
 
-    .phase-badge.totality-active {
-      background: rgba(255, 77, 77, 0.25);
-      border-color: var(--accent-red);
-      color: var(--accent-red);
-      animation: pulse 0.8s infinite alternate;
-    }
+        .timer-display {
+            font-size: 2.8rem;
+            font-weight: bold;
+            font-family: monospace;
+            color: var(--accent-cyan);
+            margin: 5px 0;
+        }
 
-    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+        .totality-card {
+            width: 100%;
+            background: rgba(255, 183, 3, 0.12);
+            border: 1px solid var(--accent-gold);
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 10px;
+            text-align: center;
+        }
 
-    .milestones { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    .milestones td { padding: 6px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.85rem; }
-    .milestones tr.active-row { background: rgba(0, 240, 255, 0.15); font-weight: bold; }
+        .totality-val {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--accent-gold);
+        }
 
-    .controls { grid-column: 1 / -1; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
-    button {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: var(--text-main);
-      padding: 10px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    button:hover { background: var(--accent-gold); color: #000; }
-    button.test-btn { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+        .phase-badge {
+            background: rgba(255, 183, 3, 0.15);
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-align: center;
+        }
 
-    .safety-banner {
-      grid-column: 1 / -1;
-      background: rgba(255, 77, 77, 0.1);
-      border: 1px solid var(--accent-red);
-      border-radius: 10px;
-      padding: 10px 15px;
-      font-size: 0.8rem;
-      text-align: center;
-      color: #ffb3b3;
-    }
+        .phase-badge.totality-active {
+            background: rgba(255, 77, 77, 0.25);
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+            animation: pulse 0.8s infinite alternate;
+        }
 
-    footer {
-      margin-top: 30px;
-      text-align: center;
-      font-size: 0.85rem;
-      color: var(--text-dim);
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      padding-top: 15px;
-      width: 100%;
-      max-width: 1000px;
-    }
+        @keyframes pulse {
+            from {
+                transform: scale(1);
+            }
 
-    footer b { color: var(--accent-gold); }
-  </style>
+            to {
+                transform: scale(1.05);
+            }
+        }
+
+        .milestones {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .milestones td {
+            padding: 6px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.85rem;
+        }
+
+        .milestones tr.active-row {
+            background: rgba(0, 240, 255, 0.15);
+            font-weight: bold;
+        }
+
+        .controls {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-main);
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: var(--accent-gold);
+            color: #000;
+        }
+
+        button.test-btn {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        button.sound-btn.sound-on {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: #000;
+        }
+
+        button.sound-btn.sound-on:hover {
+            background: var(--accent-gold);
+        }
+
+        .safety-banner {
+            grid-column: 1 / -1;
+            background: rgba(255, 77, 77, 0.1);
+            border: 1px solid var(--accent-red);
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-size: 0.8rem;
+            text-align: center;
+            color: #ffb3b3;
+        }
+
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        footer b {
+            color: var(--accent-gold);
+        }
+    </style>
 </head>
+
 <body>
 
-  <header>
-    <h1>ECLIPSE SOLAR TOTAL 2026</h1>
-    <div class="subtitle">Seguimiento en directo con avisos de voz • 12 de Agosto de 2026</div>
-  </header>
+    <header>
+        <h1>ECLIPSE SOLAR TOTAL 2026</h1>
+        <div class="subtitle">Seguimiento en directo con avisos de voz • 12 de Agosto de 2026</div>
+    </header>
 
-  <div class="main-grid">
+    <div class="main-grid">
 
-    <div class="gps-box">
-      <div>📍 Ubicación activa: <span id="gps-coords" class="gps-status">Obteniendo GPS...</span></div>
-      <button style="padding: 4px 10px; font-size: 0.75rem;" onclick="requestGPS()">Actualizar GPS</button>
+        <div class="gps-box">
+            <div>📍 Ubicación activa: <span id="gps-coords" class="gps-status">Obteniendo GPS...</span></div>
+            <button style="padding: 4px 10px; font-size: 0.75rem;" onclick="requestGPS()">Actualizar GPS</button>
+        </div>
+
+        <div class="card">
+            <div style="font-size:0.8rem; color:var(--text-dim);">HORA LOCAL EN TU UBICACIÓN</div>
+            <div id="local-time"
+                style="font-size: 1.4rem; font-family: monospace; font-weight: bold; margin-bottom: 5px;">00:00:00</div>
+
+            <div class="eclipse-stage">
+                <div class="sun" id="sun-element"></div>
+                <div class="moon" id="moon-element"></div>
+            </div>
+
+            <div id="phase-badge" class="phase-badge">Calculando Fase...</div>
+        </div>
+
+        <div class="card">
+            <div class="timer-title" id="timer-label">CUENTA ATRÁS HACIA C1</div>
+            <div class="timer-display" id="countdown">00:00:00</div>
+
+            <div class="totality-card">
+                <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim);">DURACIÓN DE LA
+                    TOTALIDAD (C2 ➔ C3)</div>
+                <div class="totality-val" id="totality-duration">1 min 03 s</div>
+                <div style="font-size:0.75rem; color: var(--text-dim);" id="totality-secs">(63 segundos exactos)</div>
+            </div>
+
+            <table class="milestones">
+                <tr id="row-c1">
+                    <td><b>C1:</b> Inicio Parcial</td>
+                    <td align="right" id="t-c1">19:31:15</td>
+                </tr>
+                <tr id="row-c2">
+                    <td><b>C2:</b> Inicio Totalidad</td>
+                    <td align="right" id="t-c2">20:26:50</td>
+                </tr>
+                <tr id="row-max">
+                    <td><b>MÁX:</b> Máximo Eclipse</td>
+                    <td align="right" id="t-max">20:27:21</td>
+                </tr>
+                <tr id="row-c3">
+                    <td><b>C3:</b> Fin Totalidad</td>
+                    <td align="right" id="t-c3">20:27:53</td>
+                </tr>
+                <tr id="row-c4">
+                    <td><b>C4:</b> Fin Eclipse</td>
+                    <td align="right" id="t-c4">21:20:00</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="safety-banner">
+            🛑 <b>REGLA DE SEGURIDAD OCULAR:</b> Usa gafas homologadas (ISO 12312-2) durante C1-C2 y C3-C4. Solo es
+            seguro quitárselas tras escuchar el aviso de la app en C2 y hasta el aviso de ponerse las gafas 10s antes de
+            C3.
+        </div>
+
+        <div class="controls">
+            <button id="sound-btn" class="sound-btn" onclick="toggleSound()">🔇 Sonido / Voz Desactivado</button>
+            <button class="test-btn" onclick="startTestMode()">🧪 Probar Modo Test (Sincronizado)</button>
+            <button onclick="resetRealTime()">⏱️ Volver a Tiempo Real</button>
+        </div>
+
     </div>
 
-    <div class="card">
-      <div style="font-size:0.8rem; color:var(--text-dim);">HORA LOCAL EN TU UBICACIÓN</div>
-      <div id="local-time" style="font-size: 1.4rem; font-family: monospace; font-weight: bold; margin-bottom: 5px;">00:00:00</div>
-      
-      <div class="eclipse-stage">
-        <div class="sun" id="sun-element"></div>
-        <div class="moon" id="moon-element"></div>
-      </div>
+    <footer>
+        Desarrollado para el seguimiento del Eclipse Solar.
+    </footer>
 
-      <div id="phase-badge" class="phase-badge">Calculando Fase...</div>
-    </div>
+    <script>
+        const DEFAULT_LAT = 43.483;
+        const DEFAULT_LON = -3.788;
 
-    <div class="card">
-      <div class="timer-title" id="timer-label">CUENTA ATRÁS HACIA C1</div>
-      <div class="timer-display" id="countdown">00:00:00</div>
+        let TIMES = {
+            C1: new Date('2026-08-12T19:31:15+02:00').getTime(),
+            C2: new Date('2026-08-12T20:26:50+02:00').getTime(),
+            MAX: new Date('2026-08-12T20:27:21+02:00').getTime(),
+            C3: new Date('2026-08-12T20:27:53+02:00').getTime(),
+            C4: new Date('2026-08-12T21:20:00+02:00').getTime(),
+        };
 
-      <div class="totality-card">
-        <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim);">DURACIÓN DE LA TOTALIDAD (C2 ➔ C3)</div>
-        <div class="totality-val" id="totality-duration">1 min 03 s</div>
-        <div style="font-size:0.75rem; color: var(--text-dim);" id="totality-secs">(63 segundos exactos)</div>
-      </div>
+        let testMode = false;
+        let simCurrentTime = 0;
+        let lastRealTime = 0;
+        let audioContext = null;
+        let synth = window.speechSynthesis;
+        let spokenSeconds = {};
+        let soundEnabled = false;
 
-      <table class="milestones">
-        <tr id="row-c1"><td><b>C1:</b> Inicio Parcial</td><td align="right" id="t-c1">19:31:15</td></tr>
-        <tr id="row-c2"><td><b>C2:</b> Inicio Totalidad</td><td align="right" id="t-c2">20:26:50</td></tr>
-        <tr id="row-max"><td><b>MÁX:</b> Máximo Eclipse</td><td align="right" id="t-max">20:27:21</td></tr>
-        <tr id="row-c3"><td><b>C3:</b> Fin Totalidad</td><td align="right" id="t-c3">20:27:53</td></tr>
-        <tr id="row-c4"><td><b>C4:</b> Fin Eclipse</td><td align="right" id="t-c4">21:20:00</td></tr>
-      </table>
-    </div>
-
-    <div class="safety-banner">
-      🛑 <b>REGLA DE SEGURIDAD OCULAR:</b> Usa gafas homologadas (ISO 12312-2) durante C1-C2 y C3-C4. Solo es seguro quitárselas tras escuchar el aviso de la app en C2 y hasta el aviso de ponerse las gafas 10s antes de C3.
-    </div>
-
-    <div class="controls">
-      <button onclick="enableAudio()">🔊 Activar Sonido / Voz</button>
-      <button class="test-btn" onclick="startTestMode()">🧪 Probar Modo Test (Sincronizado)</button>
-      <button onclick="resetRealTime()">⏱️ Volver a Tiempo Real</button>
-    </div>
-
-  </div>
-
-  <footer>
-    Desarrollado para el seguimiento del Eclipse Solar 2026 • Autor: <b>David Terán Garrido</b>
-  </footer>
-
-  <script>
-    const DEFAULT_LAT = 43.483;
-    const DEFAULT_LON = -3.788;
-    
-    let TIMES = {
-      C1: new Date('2026-08-12T19:31:15+02:00').getTime(),
-      C2: new Date('2026-08-12T20:26:50+02:00').getTime(),
-      MAX: new Date('2026-08-12T20:27:21+02:00').getTime(),
-      C3: new Date('2026-08-12T20:27:53+02:00').getTime(),
-      C4: new Date('2026-08-12T21:20:00+02:00').getTime(),
-    };
-
-    let testMode = false;
-    let simCurrentTime = 0;
-    let lastRealTime = 0;
-    let audioContext = null;
-    let synth = window.speechSynthesis;
-    let spokenSeconds = {};
-
-    function enableAudio() {
-      if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      }
-    }
-
-    function playBeep(freq = 880, duration = 0.12) {
-      if (!audioContext) return;
-      try {
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-        osc.start();
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
-        osc.stop(audioContext.currentTime + duration);
-      } catch(e) {}
-    }
-
-    function speak(text, cancelPrevious = true) {
-      if (!synth) return;
-      if (cancelPrevious) synth.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'es-ES';
-      utterance.rate = 1.2; // Ligero aumento de velocidad para que quepa perfecto en cada segundo
-      synth.speak(utterance);
-    }
-
-    function recalculateTimes(lat, lon) {
-      const dLat = lat - DEFAULT_LAT;
-      const dLon = lon - DEFAULT_LON;
-      const shiftMs = (dLon * 240 + dLat * 30) * 1000;
-
-      TIMES = {
-        C1: new Date('2026-08-12T19:31:15+02:00').getTime() + shiftMs,
-        C2: new Date('2026-08-12T20:26:50+02:00').getTime() + shiftMs,
-        MAX: new Date('2026-08-12T20:27:21+02:00').getTime() + shiftMs,
-        C3: new Date('2026-08-12T20:27:53+02:00').getTime() + shiftMs,
-        C4: new Date('2026-08-12T21:20:00+02:00').getTime() + shiftMs,
-      };
-
-      updateUIElements();
-    }
-
-    function updateUIElements() {
-      const durMs = TIMES.C3 - TIMES.C2;
-      const durSecs = Math.round(durMs / 1000);
-      const mins = Math.floor(durSecs / 60);
-      const secs = durSecs % 60;
-
-      document.getElementById('totality-duration').innerText = `${mins} min ${String(secs).padStart(2, '0')} s`;
-      document.getElementById('totality-secs').innerText = `(${durSecs} segundos exactos)`;
-
-      const fmt = (ms) => new Date(ms).toTimeString().substring(0, 8);
-      document.getElementById('t-c1').innerText = fmt(TIMES.C1);
-      document.getElementById('t-c2').innerText = fmt(TIMES.C2);
-      document.getElementById('t-max').innerText = fmt(TIMES.MAX);
-      document.getElementById('t-c3').innerText = fmt(TIMES.C3);
-      document.getElementById('t-c4').innerText = fmt(TIMES.C4);
-    }
-
-    function requestGPS() {
-      const label = document.getElementById('gps-coords');
-      if ("geolocation" in navigator) {
-        label.innerText = "Buscando satélites...";
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const lat = pos.coords.latitude;
-            const lon = pos.coords.longitude;
-            label.innerText = `${lat.toFixed(3)}° N, ${lon.toFixed(3)}° W (GPS Activo)`;
-            recalculateTimes(lat, lon);
-          },
-          (err) => {
-            label.innerText = "Cueto, Santander (Fallback automático)";
-            recalculateTimes(DEFAULT_LAT, DEFAULT_LON);
-          },
-          { timeout: 7000 }
-        );
-      } else {
-        label.innerText = "Cueto, Santander (Navegador sin GPS)";
-        recalculateTimes(DEFAULT_LAT, DEFAULT_LON);
-      }
-    }
-
-    function formatTime(ms) {
-      if (ms < 0) ms = 0;
-      const totalSecs = Math.floor(ms / 1000);
-      const h = Math.floor(totalSecs / 3600);
-      const m = Math.floor((totalSecs % 3600) / 60);
-      const s = totalSecs % 60;
-      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-    }
-
-    function startTestMode() {
-      enableAudio();
-      
-      // 1. Hablar PRIMERO para avisar
-      speak("Modo simulación activado. La cuenta atrás comenzará en breve.");
-
-      // 2. Iniciar simulación 18 segundos antes de C2
-      // (18s a 10s = 8 segundos de margen para que la frase anterior termine)
-      testMode = true;
-      spokenSeconds = {};
-      simCurrentTime = TIMES.C2 - 18000;
-      lastRealTime = Date.now();
-    }
-
-    function resetRealTime() {
-      testMode = false;
-      spokenSeconds = {};
-      speak("Modo tiempo real restaurado.");
-    }
-
-    function getCurrentTime() {
-      if (!testMode) return Date.now();
-
-      const nowReal = Date.now();
-      const deltaMs = nowReal - lastRealTime;
-      lastRealTime = nowReal;
-
-      let speedMultiplier = 1.0;
-
-      // Mantener ritmo 1x exacto desde 12s antes de C2 hasta 12s después de C3
-      if (simCurrentTime >= (TIMES.C2 - 12000) && simCurrentTime <= (TIMES.C3 + 12000)) {
-        speedMultiplier = 1.0; 
-      } else {
-        speedMultiplier = 4.0; // Velocidad moderada de salto
-      }
-
-      simCurrentTime += deltaMs * speedMultiplier;
-      return simCurrentTime;
-    }
-
-    function updateApp() {
-      const now = getCurrentTime();
-      document.getElementById('local-time').innerText = new Date(now).toLocaleTimeString('es-ES');
-
-      const sunEl = document.getElementById('sun-element');
-      const moonEl = document.getElementById('moon-element');
-      const badge = document.getElementById('phase-badge');
-      const timerDisplay = document.getElementById('countdown');
-      const timerLabel = document.getElementById('timer-label');
-
-      document.querySelectorAll('.milestones tr').forEach(r => r.classList.remove('active-row'));
-
-      let nextTarget = null;
-      let moonProgress = 200;
-
-      if (now < TIMES.C1) {
-        nextTarget = TIMES.C1;
-        timerLabel.innerText = "CUENTA ATRÁS HASTA C1";
-        badge.innerText = "Fase Solar Normal";
-        document.getElementById('row-c1').classList.add('active-row');
-        sunEl.classList.remove('totality');
-
-      } else if (now >= TIMES.C1 && now < TIMES.C2) {
-        nextTarget = TIMES.C2;
-        timerLabel.innerText = "CUENTA ATRÁS HASTA TOTALIDAD (C2)";
-        badge.innerText = "Fase Parcial (Poner Gafas)";
-        document.getElementById('row-c2').classList.add('active-row');
-        sunEl.classList.remove('totality');
-
-        const ratio = (now - TIMES.C1) / (TIMES.C2 - TIMES.C1);
-        moonProgress = 200 - (ratio * 200);
-
-        // CUENTA ATRÁS C2 (ENTRADA TOTALIDAD) - SINCRONIZADA
-        const diffSecs = Math.ceil((TIMES.C2 - now) / 1000);
-        if (diffSecs <= 10 && diffSecs >= 1) {
-          const key = `c2_${diffSecs}`;
-          if (!spokenSeconds[key]) {
-            spokenSeconds[key] = true;
-            playBeep(880, 0.1);
-            if (diffSecs === 10) {
-              speak("10. Prepárate para quitarte las gafas.");
-            } else if (diffSecs === 3) {
-              speak("3. ¡Quítate las gafas!");
+        function setSoundState(on) {
+            soundEnabled = on;
+            if (on) {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
             } else {
-              speak(String(diffSecs));
+                if (synth) synth.cancel();
             }
-          }
+            const btn = document.getElementById('sound-btn');
+            if (btn) {
+                btn.classList.toggle('sound-on', on);
+                btn.innerText = on ? '🔊 Sonido / Voz Activado' : '🔇 Sonido / Voz Desactivado';
+            }
         }
 
-      } else if (now >= TIMES.C2 && now < TIMES.C3) {
-        nextTarget = TIMES.C3;
-        timerLabel.innerText = "TIEMPO RESTANTE DE TOTALIDAD";
-        badge.innerText = "✨ TOTALIDAD - PUEDES QUITARTE LAS GAFAS ✨";
-        badge.classList.add('totality-active');
-        sunEl.classList.add('totality');
-        document.getElementById('row-max').classList.add('active-row');
-        document.getElementById('row-c3').classList.add('active-row');
-        moonProgress = 0;
-
-        // CUENTA ATRÁS C3 (SALIDA TOTALIDAD) - SINCRONIZADA
-        const diffSecs = Math.ceil((TIMES.C3 - now) / 1000);
-        if (diffSecs <= 10 && diffSecs >= 1) {
-          const key = `c3_${diffSecs}`;
-          if (!spokenSeconds[key]) {
-            spokenSeconds[key] = true;
-            playBeep(1200, 0.12);
-            if (diffSecs === 10) {
-              speak("10. Prepárate para ponerte las gafas.");
-            } else if (diffSecs === 3) {
-              speak("3. ¡Pónte las gafas!");
-            } else {
-              speak(String(diffSecs));
-            }
-          }
+        function toggleSound() {
+            setSoundState(!soundEnabled);
         }
 
-      } else if (now >= TIMES.C3 && now < TIMES.C4) {
-        nextTarget = TIMES.C4;
-        timerLabel.innerText = "CUENTA ATRÁS FIN ECLIPSE (C4)";
-        badge.innerText = "Fase Parcial Saliente (Poner Gafas)";
-        badge.classList.remove('totality-active');
-        sunEl.classList.remove('totality');
-        document.getElementById('row-c4').classList.add('active-row');
+        function playBeep(freq = 880, duration = 0.12) {
+            if (!audioContext || !soundEnabled) return;
+            try {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
+                osc.stop(audioContext.currentTime + duration);
+            } catch (e) { }
+        }
 
-        const ratio = (now - TIMES.C3) / (TIMES.C4 - TIMES.C3);
-        moonProgress = -(ratio * 200);
+        function speak(text, cancelPrevious = true) {
+            if (!synth || !soundEnabled) return;
+            if (cancelPrevious) synth.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-ES';
+            utterance.rate = 1.2; // Ligero aumento de velocidad para que quepa perfecto en cada segundo
+            synth.speak(utterance);
+        }
 
-      } else {
-        timerLabel.innerText = "ECLIPSE FINALIZADO";
-        badge.innerText = "Eclipse Finalizado";
-        timerDisplay.innerText = "00:00:00";
-        moonProgress = -200;
-        sunEl.classList.remove('totality');
-      }
+        function recalculateTimes(lat, lon) {
+            const dLat = lat - DEFAULT_LAT;
+            const dLon = lon - DEFAULT_LON;
+            const shiftMs = (dLon * 240 + dLat * 30) * 1000;
 
-      moonEl.style.transform = `translateX(${moonProgress}px)`;
-      if (nextTarget) timerDisplay.innerText = formatTime(nextTarget - now);
-    }
+            TIMES = {
+                C1: new Date('2026-08-12T19:31:15+02:00').getTime() + shiftMs,
+                C2: new Date('2026-08-12T20:26:50+02:00').getTime() + shiftMs,
+                MAX: new Date('2026-08-12T20:27:21+02:00').getTime() + shiftMs,
+                C3: new Date('2026-08-12T20:27:53+02:00').getTime() + shiftMs,
+                C4: new Date('2026-08-12T21:20:00+02:00').getTime() + shiftMs,
+            };
 
-    requestGPS();
-    setInterval(updateApp, 40);
-  </script>
+            updateUIElements();
+        }
+
+        function updateUIElements() {
+            const durMs = TIMES.C3 - TIMES.C2;
+            const durSecs = Math.round(durMs / 1000);
+            const mins = Math.floor(durSecs / 60);
+            const secs = durSecs % 60;
+
+            document.getElementById('totality-duration').innerText = `${mins} min ${String(secs).padStart(2, '0')} s`;
+            document.getElementById('totality-secs').innerText = `(${durSecs} segundos exactos)`;
+
+            const fmt = (ms) => new Date(ms).toTimeString().substring(0, 8);
+            document.getElementById('t-c1').innerText = fmt(TIMES.C1);
+            document.getElementById('t-c2').innerText = fmt(TIMES.C2);
+            document.getElementById('t-max').innerText = fmt(TIMES.MAX);
+            document.getElementById('t-c3').innerText = fmt(TIMES.C3);
+            document.getElementById('t-c4').innerText = fmt(TIMES.C4);
+        }
+
+        function requestGPS() {
+            const label = document.getElementById('gps-coords');
+            if ("geolocation" in navigator) {
+                label.innerText = "Buscando satélites...";
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const lat = pos.coords.latitude;
+                        const lon = pos.coords.longitude;
+                        label.innerText = `${lat.toFixed(3)}° N, ${lon.toFixed(3)}° W (GPS Activo)`;
+                        recalculateTimes(lat, lon);
+                    },
+                    (err) => {
+                        label.innerText = "Cueto, Santander (Fallback automático)";
+                        recalculateTimes(DEFAULT_LAT, DEFAULT_LON);
+                    },
+                    { timeout: 7000 }
+                );
+            } else {
+                label.innerText = "Cueto, Santander (Navegador sin GPS)";
+                recalculateTimes(DEFAULT_LAT, DEFAULT_LON);
+            }
+        }
+
+        function formatTime(ms) {
+            if (ms < 0) ms = 0;
+            const totalSecs = Math.floor(ms / 1000);
+            const h = Math.floor(totalSecs / 3600);
+            const m = Math.floor((totalSecs % 3600) / 60);
+            const s = totalSecs % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function startTestMode() {
+            setSoundState(true);
+
+            // 1. Hablar PRIMERO para avisar
+            speak("Modo simulación activado. La cuenta atrás comenzará en breve.");
+
+            // 2. Iniciar simulación 35 segundos antes de C2
+            // (la ventana 1x arranca aquí: 30s aviso + 10s cuenta atrás, todo en tiempo real)
+            testMode = true;
+            spokenSeconds = {};
+            simCurrentTime = TIMES.C2 - 35000;
+            lastRealTime = Date.now();
+        }
+
+        function resetRealTime() {
+            testMode = false;
+            spokenSeconds = {};
+            speak("Modo tiempo real restaurado.");
+        }
+
+        function getCurrentTime() {
+            if (!testMode) return Date.now();
+
+            const nowReal = Date.now();
+            const deltaMs = nowReal - lastRealTime;
+            lastRealTime = nowReal;
+
+            let speedMultiplier = 1.0;
+
+            // Mantener ritmo 1x exacto desde 35s antes de C2 hasta 35s después de C3
+            // (cubre el aviso 30s + cuenta atrás 10s antes de C2 y C3)
+            if (simCurrentTime >= (TIMES.C2 - 35000) && simCurrentTime <= (TIMES.C3 + 35000)) {
+                speedMultiplier = 1.0;
+            } else {
+                speedMultiplier = 4.0; // Velocidad moderada de salto
+            }
+
+            simCurrentTime += deltaMs * speedMultiplier;
+            return simCurrentTime;
+        }
+
+        function updateApp() {
+            const now = getCurrentTime();
+            document.getElementById('local-time').innerText = new Date(now).toLocaleTimeString('es-ES');
+
+            const sunEl = document.getElementById('sun-element');
+            const moonEl = document.getElementById('moon-element');
+            const badge = document.getElementById('phase-badge');
+            const timerDisplay = document.getElementById('countdown');
+            const timerLabel = document.getElementById('timer-label');
+
+            document.querySelectorAll('.milestones tr').forEach(r => r.classList.remove('active-row'));
+
+            let nextTarget = null;
+            let moonProgress = 200;
+
+            if (now < TIMES.C1) {
+                nextTarget = TIMES.C1;
+                timerLabel.innerText = "CUENTA ATRÁS HASTA C1";
+                badge.innerText = "Fase Solar Normal";
+                document.getElementById('row-c1').classList.add('active-row');
+                sunEl.classList.remove('totality');
+
+            } else if (now >= TIMES.C1 && now < TIMES.C2) {
+                nextTarget = TIMES.C2;
+                timerLabel.innerText = "CUENTA ATRÁS HASTA TOTALIDAD (C2)";
+                badge.innerText = "Fase Parcial (Poner Gafas)";
+                document.getElementById('row-c2').classList.add('active-row');
+                sunEl.classList.remove('totality');
+
+                const ratio = (now - TIMES.C1) / (TIMES.C2 - TIMES.C1);
+                moonProgress = 200 - (ratio * 200);
+
+                // AVISO C2 (30s antes): decir fase y qué hacer, PRIMERO
+                const diffSecs = Math.ceil((TIMES.C2 - now) / 1000);
+                if (diffSecs === 30) {
+                    const k = 'ann_c2';
+                    if (!spokenSeconds[k]) {
+                        spokenSeconds[k] = true;
+                        speak("Fase parcial. En treinta segundos comienza la totalidad. Prepárate para quitarte las gafas.");
+                    }
+                }
+
+                // CUENTA ATRÁS C2 (10s) - pitido sincronizado con cada número
+                if (diffSecs <= 10 && diffSecs >= 1) {
+                    const key = `c2_${diffSecs}`;
+                    if (!spokenSeconds[key]) {
+                        spokenSeconds[key] = true;
+                        playBeep(880, 0.12);
+                        if (diffSecs === 3) {
+                            speak("3. ¡Quítate las gafas!");
+                        } else if (diffSecs === 1) {
+                            speak("1");
+                        } else {
+                            speak(String(diffSecs));
+                        }
+                    }
+                }
+
+            } else if (now >= TIMES.C2 && now < TIMES.C3) {
+                nextTarget = TIMES.C3;
+                timerLabel.innerText = "TIEMPO RESTANTE DE TOTALIDAD";
+                badge.innerText = "✨ TOTALIDAD - PUEDES QUITARTE LAS GAFAS ✨";
+                badge.classList.add('totality-active');
+                sunEl.classList.add('totality');
+                document.getElementById('row-max').classList.add('active-row');
+                document.getElementById('row-c3').classList.add('active-row');
+                moonProgress = 0;
+
+                // AVISO C3 (30s antes): decir fase y qué hacer, PRIMERO
+                const diffSecs = Math.ceil((TIMES.C3 - now) / 1000);
+                if (diffSecs === 30) {
+                    const k = 'ann_c3';
+                    if (!spokenSeconds[k]) {
+                        spokenSeconds[k] = true;
+                        speak("Fase de totalidad. En treinta segundos termina. Prepárate para ponerte las gafas.");
+                    }
+                }
+
+                // CUENTA ATRÁS C3 (10s) - pitido sincronizado con cada número
+                if (diffSecs <= 10 && diffSecs >= 1) {
+                    const key = `c3_${diffSecs}`;
+                    if (!spokenSeconds[key]) {
+                        spokenSeconds[key] = true;
+                        playBeep(1200, 0.12);
+                        if (diffSecs === 3) {
+                            speak("3. ¡Pónte las gafas!");
+                        } else if (diffSecs === 1) {
+                            speak("1");
+                        } else {
+                            speak(String(diffSecs));
+                        }
+                    }
+                }
+
+            } else if (now >= TIMES.C3 && now < TIMES.C4) {
+                nextTarget = TIMES.C4;
+                timerLabel.innerText = "CUENTA ATRÁS FIN ECLIPSE (C4)";
+                badge.innerText = "Fase Parcial Saliente (Poner Gafas)";
+                badge.classList.remove('totality-active');
+                sunEl.classList.remove('totality');
+                document.getElementById('row-c4').classList.add('active-row');
+
+                const ratio = (now - TIMES.C3) / (TIMES.C4 - TIMES.C3);
+                moonProgress = -(ratio * 200);
+
+            } else {
+                timerLabel.innerText = "ECLIPSE FINALIZADO";
+                badge.innerText = "Eclipse Finalizado";
+                timerDisplay.innerText = "00:00:00";
+                moonProgress = -200;
+                sunEl.classList.remove('totality');
+            }
+
+            moonEl.style.transform = `translateX(${moonProgress}px)`;
+            if (nextTarget) timerDisplay.innerText = formatTime(nextTarget - now);
+        }
+
+        requestGPS();
+        setInterval(updateApp, 40);
+    </script>
 </body>
+
 </html>
