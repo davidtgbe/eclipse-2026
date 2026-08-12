@@ -362,6 +362,8 @@
         Desarrollado para el seguimiento del Eclipse Solar.
     </footer>
 
+    <audio id="totality-audio" loop preload="auto" src="totality.mp3"></audio>
+
     <script>
         const DEFAULT_LAT = 43.483;
         const DEFAULT_LON = -3.788;
@@ -411,6 +413,17 @@
             setSoundState(!soundEnabled);
         }
 
+        function initAudio() {
+            if (!audioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) { }
+            }
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }
+
         function playBeep(freq = 880, duration = 0.12) {
             if (!audioContext || !soundEnabled) return;
             try {
@@ -426,72 +439,29 @@
             } catch (e) { }
         }
 
-        let totalityMusicNodes = [];
-        let totalityMusicMaster = null;
         let totalityMusicActive = false;
 
-        // Ambiente sonoro durante la totalidad: pad armónico suave generado con Web Audio
+        // Música durante la totalidad desde un archivo de audio (totality.mp3)
         function startTotalityMusic() {
-            if (totalityMusicActive || !audioContext) return;
-            if (audioContext.state === 'suspended') audioContext.resume();
+            if (totalityMusicActive) return;
+            const el = document.getElementById('totality-audio');
+            if (!el) return;
             totalityMusicActive = true;
-            const now = audioContext.currentTime;
-
-            const master = audioContext.createGain();
-            totalityMusicMaster = master;
-            master.gain.setValueAtTime(0.0001, now);
-            master.gain.exponentialRampToValueAtTime(0.09, now + 2.5);
-            master.connect(audioContext.destination);
-
-            const filter = audioContext.createBiquadFilter();
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(520, now);
-            filter.Q.value = 0.7;
-            filter.connect(master);
-
-            const lfo = audioContext.createOscillator();
-            lfo.frequency.value = 0.06;
-            const lfoGain = audioContext.createGain();
-            lfoGain.gain.value = 240;
-            lfo.connect(lfoGain);
-            lfoGain.connect(filter.frequency);
-            lfo.start(now);
-            totalityMusicNodes.push(lfo, lfoGain);
-
-            const freqs = [110, 164.81, 246.94, 329.63];
-            freqs.forEach((f, i) => {
-                const osc = audioContext.createOscillator();
-                osc.type = i === 0 ? 'triangle' : 'sine';
-                osc.frequency.value = f;
-                osc.detune.value = (i - 1.5) * 4;
-                const g = audioContext.createGain();
-                g.gain.setValueAtTime(0.0001, now);
-                g.gain.exponentialRampToValueAtTime(0.4 / freqs.length, now + 2.5);
-                osc.connect(g);
-                g.connect(filter);
-                osc.start(now);
-                totalityMusicNodes.push(osc, g);
-            });
-            totalityMusicNodes.push(filter);
+            initAudio();
+            try {
+                el.currentTime = 0;
+                el.volume = 0.85;
+                el.play();
+            } catch (e) { }
         }
 
         function stopTotalityMusic() {
             if (!totalityMusicActive) return;
             totalityMusicActive = false;
-            const now = audioContext.currentTime;
-            if (totalityMusicMaster) {
-                totalityMusicMaster.gain.cancelScheduledValues(now);
-                totalityMusicMaster.gain.setValueAtTime(totalityMusicMaster.gain.value, now);
-                totalityMusicMaster.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
+            const el = document.getElementById('totality-audio');
+            if (el) {
+                try { el.pause(); } catch (e) { }
             }
-            totalityMusicNodes.forEach(n => {
-                if (n && n.stop) { try { n.stop(now + 1.6); } catch (e) { } }
-            });
-            setTimeout(() => {
-                totalityMusicNodes.forEach(n => { if (n && n.disconnect) { try { n.disconnect(); } catch (e) { } } });
-                totalityMusicNodes = [];
-                totalityMusicMaster = null;
-            }, 1700);
         }
 
         function warmSpeech() {
