@@ -362,8 +362,6 @@
         Desarrollado para el seguimiento del Eclipse Solar.
     </footer>
 
-    <audio id="totality-audio" loop preload="auto" src="totality.mp3"></audio>
-
     <script>
         const DEFAULT_LAT = 43.483;
         const DEFAULT_LON = -3.788;
@@ -400,7 +398,6 @@
                 }
             } else {
                 if (synth) synth.cancel();
-                stopTotalityMusic();
             }
             const btn = document.getElementById('sound-btn');
             if (btn) {
@@ -411,17 +408,6 @@
 
         function toggleSound() {
             setSoundState(!soundEnabled);
-        }
-
-        function initAudio() {
-            if (!audioContext) {
-                try {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                } catch (e) { }
-            }
-            if (audioContext && audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
         }
 
         function playBeep(freq = 880, duration = 0.12) {
@@ -437,31 +423,6 @@
                 gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
                 osc.stop(audioContext.currentTime + duration);
             } catch (e) { }
-        }
-
-        let totalityMusicActive = false;
-
-        // Música durante la totalidad desde un archivo de audio (totality.mp3)
-        function startTotalityMusic() {
-            if (totalityMusicActive) return;
-            const el = document.getElementById('totality-audio');
-            if (!el) return;
-            totalityMusicActive = true;
-            initAudio();
-            try {
-                el.currentTime = 0;
-                el.volume = 0.85;
-                el.play();
-            } catch (e) { }
-        }
-
-        function stopTotalityMusic() {
-            if (!totalityMusicActive) return;
-            totalityMusicActive = false;
-            const el = document.getElementById('totality-audio');
-            if (el) {
-                try { el.pause(); } catch (e) { }
-            }
         }
 
         function warmSpeech() {
@@ -692,13 +653,10 @@
                 document.getElementById('row-c3').classList.add('active-row');
                 moonProgress = 0;
 
-                // MÚSICA DE AMBIENTE durante la totalidad
-                startTotalityMusic();
-
                 // AL LLEGAR A LA TOTALIDAD (C2): avisar de quitarse las gafas y cuánto durará
                 if (!spokenSeconds['totality_start']) {
                     spokenSeconds['totality_start'] = true;
-                    speak("¡Totalidad alcanzada! Ya puedes quitarte las gafas. Recuerda: la totalidad durará " + formatDuration(TIMES.C3 - TIMES.C2) + ".");
+                    speak("¡Totalidad alcanzada! Ya puedes quitarte las gafas. Recuerda: la fase de totalidad dura " + formatDuration(TIMES.C3 - TIMES.C2) + ".");
                 }
 
                 // AVISO C3 (20s antes): decir fase y qué hacer, PRIMERO
@@ -707,7 +665,7 @@
                     const k = 'ann_c3';
                     if (!spokenSeconds[k]) {
                         spokenSeconds[k] = true;
-                        speak("Fase de totalidad, que dura " + formatDuration(TIMES.C3 - TIMES.C2) + ". En veinte segundos termina. Prepárate para ponerte las gafas.");
+                        speak("La totalidad finaliza en veinte segundos. Prepárate para ponerte las gafas.");
                     }
                 }
 
@@ -727,10 +685,7 @@
                 const ratio = (now - TIMES.C3) / (TIMES.C4 - TIMES.C3);
                 moonProgress = -(ratio * 200);
 
-                stopTotalityMusic();
-
             } else {
-                stopTotalityMusic();
                 timerLabel.innerText = "ECLIPSE FINALIZADO";
                 badge.innerText = "Eclipse Finalizado";
                 timerDisplay.innerText = "00:00:00";
