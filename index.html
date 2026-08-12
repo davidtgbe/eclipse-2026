@@ -394,7 +394,7 @@
                 }
                 if (!wasOn) {
                     warmSpeech();
-                    speak("Sonido activado.");
+                    speak("El sonido está activado.");
                 }
             } else {
                 if (synth) synth.cancel();
@@ -445,17 +445,29 @@
             countdownScheduled = { c2: false, c3: false };
         }
 
+        function formatDuration(ms) {
+            const secs = Math.round(ms / 1000);
+            const mins = Math.floor(secs / 60);
+            const rem = secs % 60;
+            if (mins === 0) return `${secs} segundos`;
+            if (rem === 0) return `${mins} minutos`;
+            return `${mins} minutos y ${rem} segundos`;
+        }
+
         // Programa los pitidos y la voz de la cuenta atrás en momentos exactos,
         // encolando cada número ligeramente antes de su segundo para compensar
         // la latencia del motor de voz (evita que la voz vaya 1s por detrás).
-        function startScheduledCountdown(eventKey, beepFreq, startAt, specialAt, specialText) {
+        // Solo se dice en voz los números >= voiceFloor; por debajo solo pitido.
+        function startScheduledCountdown(eventKey, beepFreq, startAt, specialAt, specialText, voiceFloor) {
             if (countdownScheduled[eventKey]) return;
             countdownScheduled[eventKey] = true;
             for (let n = startAt; n >= 1; n--) {
                 const delay = Math.max(0, (startAt - n) * 1000 - 250);
                 const t = setTimeout(() => {
                     playBeep(beepFreq, 0.12);
-                    speak(n === specialAt ? specialText : String(n), false);
+                    if (n >= voiceFloor) {
+                        speak(n === specialAt ? specialText : String(n), false);
+                    }
                 }, delay);
                 countdownTimers.push(t);
             }
@@ -622,13 +634,13 @@
                     const k = 'ann_c2';
                     if (!spokenSeconds[k]) {
                         spokenSeconds[k] = true;
-                        speak("Fase parcial. En veinte segundos comienza la totalidad. Espera a la señal de la aplicación para quitarte las gafas.");
+                        speak("Fase parcial. En veinte segundos comienza la totalidad, que durará " + formatDuration(TIMES.C3 - TIMES.C2) + ". Espera a la señal de la aplicación para quitarte las gafas.");
                     }
                 }
 
                 // CUENTA ATRÁS C2 (10s) - programada para sincronizar voz y pitido
                 if (diffSecs <= 10 && diffSecs >= 1) {
-                    startScheduledCountdown('c2', 880, Math.min(diffSecs, 10), null, null);
+                    startScheduledCountdown('c2', 880, Math.min(diffSecs, 10), null, null, 1);
                 }
 
             } else if (now >= TIMES.C2 && now < TIMES.C3) {
@@ -641,10 +653,10 @@
                 document.getElementById('row-c3').classList.add('active-row');
                 moonProgress = 0;
 
-                // AL LLEGAR A LA TOTALIDAD (C2): avisar de quitarse las gafas
+                // AL LLEGAR A LA TOTALIDAD (C2): avisar de quitarse las gafas y cuánto durará
                 if (!spokenSeconds['totality_start']) {
                     spokenSeconds['totality_start'] = true;
-                    speak("¡Totalidad alcanzada! Ya puedes quitarte las gafas.");
+                    speak("¡Totalidad alcanzada! Ya puedes quitarte las gafas. Recuerda: la totalidad durará " + formatDuration(TIMES.C3 - TIMES.C2) + ".");
                 }
 
                 // AVISO C3 (20s antes): decir fase y qué hacer, PRIMERO
@@ -653,13 +665,13 @@
                     const k = 'ann_c3';
                     if (!spokenSeconds[k]) {
                         spokenSeconds[k] = true;
-                        speak("Fase de totalidad. En veinte segundos termina. Prepárate para ponerte las gafas.");
+                        speak("Fase de totalidad, que dura " + formatDuration(TIMES.C3 - TIMES.C2) + ". En veinte segundos termina. Prepárate para ponerte las gafas.");
                     }
                 }
 
-                // CUENTA ATRÁS C3 (10s) - programada para sincronizar voz y pitido
+                // CUENTA ATRÁS C3 (10s): "ponte las gafas" a los 5s; después solo pitidos (sin contar 4,3,2,1)
                 if (diffSecs <= 10 && diffSecs >= 1) {
-                    startScheduledCountdown('c3', 1200, Math.min(diffSecs, 10), 3, "3. ¡Pónte las gafas!");
+                    startScheduledCountdown('c3', 1200, Math.min(diffSecs, 10), 5, "5. ¡Pónte las gafas!", 5);
                 }
 
             } else if (now >= TIMES.C3 && now < TIMES.C4) {
