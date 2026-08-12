@@ -398,6 +398,7 @@
                 }
             } else {
                 if (synth) synth.cancel();
+                stopTotalityMusic();
             }
             const btn = document.getElementById('sound-btn');
             if (btn) {
@@ -423,6 +424,74 @@
                 gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
                 osc.stop(audioContext.currentTime + duration);
             } catch (e) { }
+        }
+
+        let totalityMusicNodes = [];
+        let totalityMusicMaster = null;
+        let totalityMusicActive = false;
+
+        // Ambiente sonoro durante la totalidad: pad armónico suave generado con Web Audio
+        function startTotalityMusic() {
+            if (totalityMusicActive || !audioContext) return;
+            if (audioContext.state === 'suspended') audioContext.resume();
+            totalityMusicActive = true;
+            const now = audioContext.currentTime;
+
+            const master = audioContext.createGain();
+            totalityMusicMaster = master;
+            master.gain.setValueAtTime(0.0001, now);
+            master.gain.exponentialRampToValueAtTime(0.09, now + 2.5);
+            master.connect(audioContext.destination);
+
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(520, now);
+            filter.Q.value = 0.7;
+            filter.connect(master);
+
+            const lfo = audioContext.createOscillator();
+            lfo.frequency.value = 0.06;
+            const lfoGain = audioContext.createGain();
+            lfoGain.gain.value = 240;
+            lfo.connect(lfoGain);
+            lfoGain.connect(filter.frequency);
+            lfo.start(now);
+            totalityMusicNodes.push(lfo, lfoGain);
+
+            const freqs = [110, 164.81, 246.94, 329.63];
+            freqs.forEach((f, i) => {
+                const osc = audioContext.createOscillator();
+                osc.type = i === 0 ? 'triangle' : 'sine';
+                osc.frequency.value = f;
+                osc.detune.value = (i - 1.5) * 4;
+                const g = audioContext.createGain();
+                g.gain.setValueAtTime(0.0001, now);
+                g.gain.exponentialRampToValueAtTime(0.4 / freqs.length, now + 2.5);
+                osc.connect(g);
+                g.connect(filter);
+                osc.start(now);
+                totalityMusicNodes.push(osc, g);
+            });
+            totalityMusicNodes.push(filter);
+        }
+
+        function stopTotalityMusic() {
+            if (!totalityMusicActive) return;
+            totalityMusicActive = false;
+            const now = audioContext.currentTime;
+            if (totalityMusicMaster) {
+                totalityMusicMaster.gain.cancelScheduledValues(now);
+                totalityMusicMaster.gain.setValueAtTime(totalityMusicMaster.gain.value, now);
+                totalityMusicMaster.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
+            }
+            totalityMusicNodes.forEach(n => {
+                if (n && n.stop) { try { n.stop(now + 1.6); } catch (e) { } }
+            });
+            setTimeout(() => {
+                totalityMusicNodes.forEach(n => { if (n && n.disconnect) { try { n.disconnect(); } catch (e) { } } });
+                totalityMusicNodes = [];
+                totalityMusicMaster = null;
+            }, 1700);
         }
 
         function warmSpeech() {
@@ -653,6 +722,9 @@
                 document.getElementById('row-c3').classList.add('active-row');
                 moonProgress = 0;
 
+                // MÚSICA DE AMBIENTE durante la totalidad
+                startTotalityMusic();
+
                 // AL LLEGAR A LA TOTALIDAD (C2): avisar de quitarse las gafas y cuánto durará
                 if (!spokenSeconds['totality_start']) {
                     spokenSeconds['totality_start'] = true;
@@ -685,7 +757,10 @@
                 const ratio = (now - TIMES.C3) / (TIMES.C4 - TIMES.C3);
                 moonProgress = -(ratio * 200);
 
+                stopTotalityMusic();
+
             } else {
+                stopTotalityMusic();
                 timerLabel.innerText = "ECLIPSE FINALIZADO";
                 badge.innerText = "Eclipse Finalizado";
                 timerDisplay.innerText = "00:00:00";
