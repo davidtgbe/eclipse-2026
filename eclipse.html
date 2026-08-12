@@ -351,7 +351,7 @@
         </div>
 
         <div class="controls">
-            <button id="sound-btn" class="sound-btn" onclick="toggleSound()">🔇 Sonido / Voz Desactivado</button>
+            <button id="sound-btn" class="sound-btn sound-on" onclick="toggleSound()">🔊 Sonido / Voz Activado</button>
             <button class="test-btn" onclick="startTestMode()">🧪 Probar Modo Test (Sincronizado)</button>
             <button onclick="resetRealTime()">⏱️ Volver a Tiempo Real</button>
         </div>
@@ -380,7 +380,7 @@
         let audioContext = null;
         let synth = window.speechSynthesis;
         let spokenSeconds = {};
-        let soundEnabled = false;
+        let soundEnabled = true;
 
         function setSoundState(on) {
             const wasOn = soundEnabled;
