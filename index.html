@@ -420,6 +420,17 @@
             } catch (e) { }
         }
 
+        function warmSpeech() {
+            if (!synth || !soundEnabled) return;
+            try {
+                synth.getVoices();
+                const u = new SpeechSynthesisUtterance(' ');
+                u.lang = 'es-ES';
+                u.rate = 1.2;
+                synth.speak(u);
+            } catch (e) { }
+        }
+
         function speak(text, cancelPrevious = true) {
             if (!synth || !soundEnabled) return;
             if (cancelPrevious) synth.cancel();
@@ -497,6 +508,9 @@
         function startTestMode() {
             setSoundState(true);
 
+            // 0. Pre-calentar el motor de voz para reducir latencia
+            warmSpeech();
+
             // 1. Hablar PRIMERO para avisar
             speak("Modo simulación activado. La cuenta atrás comenzará en breve.");
 
@@ -571,12 +585,12 @@
                 moonProgress = 200 - (ratio * 200);
 
                 // AVISO C2 (20s antes): decir fase y qué hacer, PRIMERO
-                const diffSecs = Math.ceil((TIMES.C2 - now) / 1000);
+                const diffSecs = Math.floor((TIMES.C2 - now) / 1000);
                 if (diffSecs === 20) {
                     const k = 'ann_c2';
                     if (!spokenSeconds[k]) {
                         spokenSeconds[k] = true;
-                        speak("Fase parcial. En veinte segundos comienza la totalidad. Prepárate para quitarte las gafas, pero ten precaución: solo quítatelas tras la señal de la aplicación.");
+                        speak("Fase parcial. En veinte segundos comienza la totalidad. Espera a la señal de la aplicación para quitarte las gafas.");
                     }
                 }
 
@@ -586,13 +600,7 @@
                     if (!spokenSeconds[key]) {
                         spokenSeconds[key] = true;
                         playBeep(880, 0.12);
-                        if (diffSecs === 3) {
-                            speak("3. ¡Quítate las gafas!");
-                        } else if (diffSecs === 1) {
-                            speak("1");
-                        } else {
-                            speak(String(diffSecs));
-                        }
+                        speak(String(diffSecs));
                     }
                 }
 
@@ -606,8 +614,14 @@
                 document.getElementById('row-c3').classList.add('active-row');
                 moonProgress = 0;
 
+                // AL LLEGAR A LA TOTALIDAD (C2): avisar de quitarse las gafas
+                if (!spokenSeconds['totality_start']) {
+                    spokenSeconds['totality_start'] = true;
+                    speak("¡Totalidad alcanzada! Ya puedes quitarte las gafas.");
+                }
+
                 // AVISO C3 (20s antes): decir fase y qué hacer, PRIMERO
-                const diffSecs = Math.ceil((TIMES.C3 - now) / 1000);
+                const diffSecs = Math.floor((TIMES.C3 - now) / 1000);
                 if (diffSecs === 20) {
                     const k = 'ann_c3';
                     if (!spokenSeconds[k]) {
