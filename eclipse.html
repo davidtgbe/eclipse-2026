@@ -248,6 +248,12 @@
             background: var(--accent-gold);
         }
 
+        button.sound-btn:not(.sound-on):hover {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
         .safety-banner {
             grid-column: 1 / -1;
             background: rgba(255, 77, 77, 0.1);
@@ -505,7 +511,7 @@
         function resetRealTime() {
             testMode = false;
             spokenSeconds = {};
-            speak("Modo tiempo real restaurado.");
+            speak("Modo tiempo real activado.");
         }
 
         function getCurrentTime() {
