@@ -500,11 +500,11 @@
             // 1. Hablar PRIMERO para avisar
             speak("Modo simulación activado. La cuenta atrás comenzará en breve.");
 
-            // 2. Iniciar simulación 35 segundos antes de C2
-            // (la ventana 1x arranca aquí: 30s aviso + 10s cuenta atrás, todo en tiempo real)
+            // 2. Iniciar simulación 20 segundos antes de C2
+            // (la ventana 1x arranca aquí: 20s aviso + 10s cuenta atrás, todo en tiempo real)
             testMode = true;
             spokenSeconds = {};
-            simCurrentTime = TIMES.C2 - 35000;
+            simCurrentTime = TIMES.C2 - 20000;
             lastRealTime = Date.now();
         }
 
@@ -523,9 +523,12 @@
 
             let speedMultiplier = 1.0;
 
-            // Mantener ritmo 1x exacto desde 35s antes de C2 hasta 35s después de C3
-            // (cubre el aviso 30s + cuenta atrás 10s antes de C2 y C3)
-            if (simCurrentTime >= (TIMES.C2 - 35000) && simCurrentTime <= (TIMES.C3 + 35000)) {
+            // Mantener ritmo 1x solo en los últimos 20s antes de cada evento y durante la totalidad
+            // (20s aviso + 10s cuenta atrás de C2 y C3, y los 20s previos a C4)
+            const inWindow =
+                (simCurrentTime >= (TIMES.C2 - 20000) && simCurrentTime <= TIMES.C3) ||
+                (simCurrentTime >= (TIMES.C4 - 20000) && simCurrentTime <= TIMES.C4);
+            if (inWindow) {
                 speedMultiplier = 1.0;
             } else {
                 speedMultiplier = 4.0; // Velocidad moderada de salto
@@ -567,13 +570,13 @@
                 const ratio = (now - TIMES.C1) / (TIMES.C2 - TIMES.C1);
                 moonProgress = 200 - (ratio * 200);
 
-                // AVISO C2 (30s antes): decir fase y qué hacer, PRIMERO
+                // AVISO C2 (20s antes): decir fase y qué hacer, PRIMERO
                 const diffSecs = Math.ceil((TIMES.C2 - now) / 1000);
-                if (diffSecs === 30) {
+                if (diffSecs === 20) {
                     const k = 'ann_c2';
                     if (!spokenSeconds[k]) {
                         spokenSeconds[k] = true;
-                        speak("Fase parcial. En treinta segundos comienza la totalidad. Prepárate para quitarte las gafas.");
+                        speak("Fase parcial. En veinte segundos comienza la totalidad. Prepárate para quitarte las gafas, pero ten precaución: solo quítatelas tras la señal de la aplicación.");
                     }
                 }
 
@@ -603,13 +606,13 @@
                 document.getElementById('row-c3').classList.add('active-row');
                 moonProgress = 0;
 
-                // AVISO C3 (30s antes): decir fase y qué hacer, PRIMERO
+                // AVISO C3 (20s antes): decir fase y qué hacer, PRIMERO
                 const diffSecs = Math.ceil((TIMES.C3 - now) / 1000);
-                if (diffSecs === 30) {
+                if (diffSecs === 20) {
                     const k = 'ann_c3';
                     if (!spokenSeconds[k]) {
                         spokenSeconds[k] = true;
-                        speak("Fase de totalidad. En treinta segundos termina. Prepárate para ponerte las gafas.");
+                        speak("Fase de totalidad. En veinte segundos termina. Prepárate para ponerte las gafas.");
                     }
                 }
 
